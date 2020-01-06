@@ -1,87 +1,47 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Compose from '../Compose';
 import Toolbar from '../Toolbar';
 import ToolbarButton from '../ToolbarButton';
 import Message from '../Message';
 import moment from 'moment';
-
 import './MessageList.css';
 
-const MY_USER_ID = 'apple';
+import graph from '../../graph';
 
 export default function MessageList(props) {
-  const [messages, setMessages] = useState([])
-
+  const [messages, setMessages] = useState([]);
+  const [userId, setUserId] = useState('');
+  
   useEffect(() => {
     getMessages();
-  },[])
+  }, []);
 
-  
-  const getMessages = () => {
-     var tempMessages = [
-        {
-          id: 1,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 2,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 3,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 4,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 5,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 6,
-          author: 'apple',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 7,
-          author: 'orange',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 8,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 9,
-          author: 'apple',
-          message: 'Hello world! This is a long message that will hopefully get wrapped by our message bubble component! We will see how well it works.',
-          timestamp: new Date().getTime()
-        },
-        {
-          id: 10,
-          author: 'orange',
-          message: 'It looks like it wraps exactly as it is supposed to. Lets see what a reply looks like!',
-          timestamp: new Date().getTime()
-        },
-      ]
-      setMessages([...messages, ...tempMessages])
-  }
+  const getProvider = async () => {
+    const provider = props.provider;
+    if (!provider.user) {
+      provider.user = await graph.getUserDetails(provider.graph.client);
+    }
+    return provider;
+  };
+
+  const getMessages = async () => {
+    const provider = await getProvider();
+    const groupId = '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
+    const channelId = '19:1589a47ba6dc47dd9527b5fb19caa5ec@thread.skype';
+    // if (props.groupId && props.channelId) {
+      // let newMessages = await graph.getMessages(provider.graph.client, props.groupId, props.channelId);
+      let newMessages = await graph.getMessages(provider.graph.client, groupId, channelId);
+      const tempMessages = newMessages.value.map(m => ({
+        id: m.id,
+        userId: m.from.user.id,
+        body: m.body,
+        timestamp: moment(m.createdDateTime).toDate().getTime()
+      }));
+      console.log('newMessages :', newMessages);
+    // }
+
+    setMessages([...messages, ...tempMessages]);
+  };
 
   const renderMessages = () => {
     let i = 0;
@@ -92,7 +52,7 @@ export default function MessageList(props) {
       let previous = messages[i - 1];
       let current = messages[i];
       let next = messages[i + 1];
-      let isMine = current.author === MY_USER_ID;
+      let isMine = current.userId === userId;
       let currentMoment = moment(current.timestamp);
       let prevBySameAuthor = false;
       let nextBySameAuthor = false;
@@ -102,9 +62,11 @@ export default function MessageList(props) {
 
       if (previous) {
         let previousMoment = moment(previous.timestamp);
-        let previousDuration = moment.duration(currentMoment.diff(previousMoment));
+        let previousDuration = moment.duration(
+          currentMoment.diff(previousMoment)
+        );
         prevBySameAuthor = previous.author === current.author;
-        
+
         if (prevBySameAuthor && previousDuration.as('hours') < 1) {
           startsSequence = false;
         }
@@ -140,29 +102,34 @@ export default function MessageList(props) {
     }
 
     return tempMessages;
-  }
+  };
 
-    return(
-      <div className="message-list">
-        <Toolbar
-          title="Conversation Title"
-          rightItems={[
-            <ToolbarButton key="info" icon="ion-ios-information-circle-outline" />,
-            <ToolbarButton key="video" icon="ion-ios-videocam" />,
-            <ToolbarButton key="phone" icon="ion-ios-call" />
-          ]}
-        />
+  return (
+    <div className="message-list">
+      <Toolbar
+        title="Conversation Title"
+        rightItems={[
+          <ToolbarButton
+            key="info"
+            icon="ion-ios-information-circle-outline"
+          />,
+          <ToolbarButton key="video" icon="ion-ios-videocam" />,
+          <ToolbarButton key="phone" icon="ion-ios-call" />,
+        ]}
+      />
 
-        <div className="message-list-container">{renderMessages()}</div>
+      <div className="message-list-container">{renderMessages()}</div>
 
-        <Compose rightItems={[
+      <Compose
+        rightItems={[
           <ToolbarButton key="photo" icon="ion-ios-camera" />,
           <ToolbarButton key="image" icon="ion-ios-image" />,
           <ToolbarButton key="audio" icon="ion-ios-mic" />,
           <ToolbarButton key="money" icon="ion-ios-card" />,
           <ToolbarButton key="games" icon="ion-logo-game-controller-b" />,
-          <ToolbarButton key="emoji" icon="ion-ios-happy" />
-        ]}/>
-      </div>
-    );
+          <ToolbarButton key="emoji" icon="ion-ios-happy" />,
+        ]}
+      />
+    </div>
+  );
 }

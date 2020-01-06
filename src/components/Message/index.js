@@ -12,6 +12,16 @@ export default function Message(props) {
     } = props;
 
     const friendlyTimestamp = moment(data.timestamp).format('LLLL');
+
+    const getMessage = body => {
+      if (body.contentType === 'text') {
+        return body.content;
+      }
+      return (
+        <div dangerouslySetInnerHTML={{__html: body.content}}></div>
+      );
+    };
+
     return (
       <div className={[
         'message',
@@ -28,7 +38,7 @@ export default function Message(props) {
 
         <div className="bubble-container">
           <div className="bubble" title={friendlyTimestamp}>
-            { data.message }
+            { getMessage(data.body) }
           </div>
         </div>
       </div>
