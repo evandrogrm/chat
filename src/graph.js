@@ -1,21 +1,21 @@
-import "isomorphic-fetch";
+import 'isomorphic-fetch';
 
 export default {
   getUserDetails: async function(client) {
-    return client.api("/me").get();
+    return client.api('/me').get();
   },
 
   getEvents: async function(client) {
     return client
-      .api("/me/events")
-      .select("subject,organizer,start,end")
-      .orderby("createdDateTime DESC")
+      .api('/me/events')
+      .select('subject,organizer,start,end')
+      .orderby('createdDateTime DESC')
       .get();
   },
 
   getTeams: async function(client) {
     try {
-      return await client.api("/me/joinedTeams").get();
+      return await client.api('/me/joinedTeams').get();
     } catch (error) {
       console.error(error);
     }
@@ -33,10 +33,10 @@ export default {
     try {
       return await client
         .api(`/teams/${groupId}/channels/${channelId}/messages`)
-        .version("beta")
+        .version('beta')
         .get();
     } catch (error) {
       console.error(error);
     }
-  }
+  },
 };

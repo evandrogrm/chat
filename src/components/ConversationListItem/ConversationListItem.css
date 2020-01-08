@@ -4,9 +4,13 @@
   padding: 10px;
 }
 
-.conversation-list-item:hover {
-  background: #eeeef1;
+.conversation-list-item:hover:not(.selected) {
+  background: #ddddf1;
   cursor: pointer;
+}
+
+.selected {
+  background: #eeeef1;
 }
 
 .conversation-photo {

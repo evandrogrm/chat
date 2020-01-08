@@ -5,40 +5,56 @@ import ToolbarButton from '../ToolbarButton';
 import Message from '../Message';
 import moment from 'moment';
 import './MessageList.css';
+import services from '../../services';
 
 import graph from '../../graph';
 
 export default function MessageList(props) {
   const [messages, setMessages] = useState([]);
-  const [userId, setUserId] = useState('');
-  
+
   useEffect(() => {
     getMessages();
   }, []);
 
-  const getProvider = async () => {
-    const provider = props.provider;
-    if (!provider.user) {
-      provider.user = await graph.getUserDetails(provider.graph.client);
+  const getLoggedUserId = () => {
+    if (!!props.loggedUser) {
+      return props.loggedUser.id;
     }
-    return provider;
+    return '';
+  }
+
+  const getGroupId = async () => {
+    if (!!props.groupSelected) {
+      return props.groupSelected.id;
+    }
+    console.log('props.groupSelected null');
+    return '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
   };
 
   const getMessages = async () => {
-    const provider = await getProvider();
-    const groupId = '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
-    const channelId = '19:1589a47ba6dc47dd9527b5fb19caa5ec@thread.skype';
+    console.log('props MessageList: ', props);
+    const provider = props.provider;
+    // const groupId = '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
+    const groupId = await getGroupId();
+    const channelId = '19:bb339dbaa8b7402ea7f99f6370e2ace0@thread.skype';
+
     // if (props.groupId && props.channelId) {
-      // let newMessages = await graph.getMessages(provider.graph.client, props.groupId, props.channelId);
-      let newMessages = await graph.getMessages(provider.graph.client, groupId, channelId);
-      const tempMessages = newMessages.value.map(m => ({
-        id: m.id,
-        userId: m.from.user.id,
-        body: m.body,
-        timestamp: moment(m.createdDateTime).toDate().getTime()
-      }));
-      console.log('newMessages :', newMessages);
-    // }
+    // let newMessages = await graph.getMessages(provider.graph.client, props.groupId, props.channelId);
+    const newMessages = await graph.getMessages(
+      provider.graph.client,
+      groupId,
+      channelId
+    );
+    let tempMessages = newMessages.value.map(m => ({
+      id: m.id,
+      userId: m.from.user.id,
+      body: m.body,
+      timestamp: moment(m.createdDateTime)
+        .toDate()
+        .getTime(),
+      createdDateTime: m.createdDateTime,
+    }));
+    tempMessages = services.sortArray(tempMessages, 'createdDateTime');
 
     setMessages([...messages, ...tempMessages]);
   };
@@ -52,7 +68,7 @@ export default function MessageList(props) {
       let previous = messages[i - 1];
       let current = messages[i];
       let next = messages[i + 1];
-      let isMine = current.userId === userId;
+      let isMine = current.userId === getLoggedUserId();
       let currentMoment = moment(current.timestamp);
       let prevBySameAuthor = false;
       let nextBySameAuthor = false;
