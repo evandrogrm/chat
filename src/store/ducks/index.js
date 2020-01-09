@@ -1,12 +1,14 @@
 import { combineReducers } from "redux";
 import { connectRouter } from "connected-react-router";
 
-// import login from "./auth";
+import graph from "./graph";
+import error from "./error";
 
 const createRootReducer = history =>
   combineReducers({
     router: connectRouter(history),
-    // login,
+    graph,
+    error,
   });
 
 export default createRootReducer;

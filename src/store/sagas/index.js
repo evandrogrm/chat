@@ -2,15 +2,18 @@ import { all, takeLatest, takeEvery } from "redux-saga/effects";
 /**
  * TYPES
  */
-// import { Types as ReenrollmentTypes } from "../ducks/reenroll";
+import { Types as GraphTypes } from "../ducks/graph";
 
 /**
  * SAGAS
  */
-// import { reenroll } from "./reenroll";
+import { getUserDetails, getTeams, getChannels, getMessages } from "./graph";
 
 export default function* rootSaga() {
   yield all([
-    // takeLatest(ReenrollmentTypes.POST_REQUEST, reenroll),
+    takeLatest(GraphTypes.GET_USER_DETAILS_REQUEST, getUserDetails),
+    takeLatest(GraphTypes.GET_TEAMS_REQUEST, getTeams),
+    takeLatest(GraphTypes.GET_CHANNELS_REQUEST, getChannels),
+    takeLatest(GraphTypes.GET_MESSAGES_REQUEST, getMessages),
   ]);
 }

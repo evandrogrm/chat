@@ -1,23 +1,42 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import ConversationSearch from '../ConversationSearch';
 import ConversationListItem from '../ConversationListItem';
 import Toolbar from '../Toolbar';
 import ToolbarButton from '../ToolbarButton';
 import './ConversationList.css';
-import graph from '../../graph';
 
-export default function ConversationList(props) {
+import { Creators as GraphActions } from '../../store/ducks/graph';
+
+export default function ConversationList() {
   const [conversations, setConversations] = useState([]);
-  const [channelSelected, setChannelSelected] = useState({});
+
+  const { channels, channelSelected } = useSelector(state => ({
+    channels: state.graph.channels,
+    channelSelected: state.graph.channelSelected,
+  }));
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    getConversations();
-  }, []);
-  
-  useEffect(() => {
-    console.log('props ConversationList', props);
-    setChannelSelected(props.channelSelected);
-  }, [props.channelSelected]);
+    const conversations = channels.map(c => ({
+      id: c.id,
+      photo: `https://dummyimage.com/cga/${getRandomColor()}/ffffff&text=${c.displayName.charAt(
+        0
+      )}`,
+      name: c.displayName,
+      text:
+        'Último texto da conversa que vai ser truncada caso exceda o tamanho',
+    }));
+    setConversations([...conversations]);
+  }, [channels]);
+
+  const changeChannel = id => {
+    const channel = channels.filter(c => c.id === id)[0];
+    if (channel != null) {
+      dispatch(GraphActions.setChannelSelected(channel));
+    }
+  };
 
   const getRandomColor = () => {
     let letters = '0123456789ABCDEF';
@@ -26,41 +45,6 @@ export default function ConversationList(props) {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
-  };
-
-  const getConversations = async () => {
-    let channelsArray = [];
-    let conversations = [];
-    let channelSelected = false;
-    const provider = props.provider;
-    const groups = await graph.getTeams(provider.graph.client);
-    
-    if (!!groups && !!groups.value && !!groups.value.length) {
-      await props.setGroupSelected(groups.value[0]);
-      
-      await groups.value.map(async g => {
-        const channels = await graph.getChannels(provider.graph.client, g.id);
-        console.log('channels :', channels);
-        
-        if (!!channels.value && !!channels.value.length) {
-          if (!channelSelected) {
-            channelSelected = true;
-            await props.setChannelSelected(channels.value[0]);
-          }
-
-          channelsArray = channelsArray.concat(channels.value);
-          console.log('channelsArray: ', channelsArray);
-          conversations = channelsArray.map(c =>  ({
-            id: c.id,
-            photo: `https://dummyimage.com/cga/${getRandomColor()}/ffffff&text=${c.displayName.charAt(0)}`,
-            name: c.displayName,
-            text:
-              'Último texto da conversa que vai ser truncada caso exceda o tamanho',
-          }));
-          setConversations([...conversations]);
-        }
-      });
-    }
   };
 
   return (
@@ -77,8 +61,8 @@ export default function ConversationList(props) {
         <ConversationListItem
           key={conversation.id}
           data={conversation}
-          setChannelSelected={props.setChannelSelected}
-          selected={channelSelected.id === conversation.id}
+          channelSelected={channelSelected}
+          changeChannel={changeChannel}
         />
       ))}
     </div>

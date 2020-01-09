@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import shave from 'shave';
 
 import './ConversationListItem.css';
 
-export default function ConversationListItem(props) {
-  const [selected, setSelected] = useState(false);
-
+export default function ConversationListItem({
+  channelSelected,
+  data,
+  changeChannel,
+}) {
   useEffect(() => {
     shave('.conversation-snippet', 20);
   });
-  
-  useEffect(() => {
-    setSelected(props.selected);
-  }, [props.selected]);
 
-  const { photo, name, text, id } = props.data;
+  const { photo, name, text, id } = data;
 
   return (
     <div
-      className={`conversation-list-item ${selected ? 'selected' : ''}`}
-      onClick={() => props.setChannelSelected(id)}
+      className={`conversation-list-item ${
+        channelSelected.id === id ? 'selected' : ''
+      }`}
+      onClick={() => changeChannel(id)}
     >
       <img className="conversation-photo" src={photo} alt="conversation" />
       <div className="conversation-info">

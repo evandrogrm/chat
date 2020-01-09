@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import Compose from '../Compose';
 import Toolbar from '../Toolbar';
 import ToolbarButton from '../ToolbarButton';
@@ -7,45 +8,35 @@ import moment from 'moment';
 import './MessageList.css';
 import services from '../../services';
 
-import graph from '../../graph';
+import { Creators as GraphActions } from '../../store/ducks/graph';
 
-export default function MessageList(props) {
-  const [messages, setMessages] = useState([]);
+export default function MessageList({ provider }) {
+  const [currentMessages, setCurrentMessages] = useState([]);
+  const { loggedUser, teams, channelSelected, messages } = useSelector(
+    state => ({
+      loggedUser: state.graph.userDetails,
+      teams: state.graph.teams,
+      channelSelected: state.graph.channelSelected,
+      messages: state.graph.messages,
+    })
+  );
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     getMessages();
   }, []);
 
-  const getLoggedUserId = () => {
-    if (!!props.loggedUser) {
-      return props.loggedUser.id;
+  useEffect(() => {
+    console.log('channelSelected in MessageList changed to:', channelSelected);
+    if (!!channelSelected && !!channelSelected.id) {
+      getMessages();
     }
-    return '';
-  }
+  }, [channelSelected]);
 
-  const getGroupId = async () => {
-    if (!!props.groupSelected) {
-      return props.groupSelected.id;
-    }
-    console.log('props.groupSelected null');
-    return '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
-  };
-
-  const getMessages = async () => {
-    console.log('props MessageList: ', props);
-    const provider = props.provider;
-    // const groupId = '2da5fce3-2b33-4155-8f7d-9f8a4ff7a9aa';
-    const groupId = await getGroupId();
-    const channelId = '19:bb339dbaa8b7402ea7f99f6370e2ace0@thread.skype';
-
-    // if (props.groupId && props.channelId) {
-    // let newMessages = await graph.getMessages(provider.graph.client, props.groupId, props.channelId);
-    const newMessages = await graph.getMessages(
-      provider.graph.client,
-      groupId,
-      channelId
-    );
-    let tempMessages = newMessages.value.map(m => ({
+  useEffect(() => {
+    console.log('messages in MessageList changed to:', messages);
+    let tempMessages = messages.map(m => ({
       id: m.id,
       userId: m.from.user.id,
       body: m.body,
@@ -54,21 +45,28 @@ export default function MessageList(props) {
         .getTime(),
       createdDateTime: m.createdDateTime,
     }));
+    tempMessages = [...tempMessages];
     tempMessages = services.sortArray(tempMessages, 'createdDateTime');
+    setCurrentMessages(tempMessages)
+  }, [messages]);
 
-    setMessages([...messages, ...tempMessages]);
+  const getMessages = () => {
+    const groupId = !!teams[0] ? teams[0].id : '';
+    const channelId = !!channelSelected ? channelSelected.id : '';
+
+    dispatch(GraphActions.getMessagesRequest(provider.graph.client, groupId, channelId));
   };
 
   const renderMessages = () => {
     let i = 0;
-    let messageCount = messages.length;
+    let messageCount = currentMessages.length;
     let tempMessages = [];
 
     while (i < messageCount) {
-      let previous = messages[i - 1];
-      let current = messages[i];
-      let next = messages[i + 1];
-      let isMine = current.userId === getLoggedUserId();
+      let previous = currentMessages[i - 1];
+      let current = currentMessages[i];
+      let next = currentMessages[i + 1];
+      let isMine = current.userId === loggedUser.id;
       let currentMoment = moment(current.timestamp);
       let prevBySameAuthor = false;
       let nextBySameAuthor = false;

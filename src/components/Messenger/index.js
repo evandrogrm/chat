@@ -1,54 +1,64 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
 import './Messenger.css';
-import graph from '../../graph';
-import provider from '../../CustomTeamsProvider';
 
-export default class Messenger extends React.Component {
-  state = {
-    loggedUser: null,
-    groupSelected: null,
-    channelSelected: null,
-  };
+import { Creators as GraphActions } from '../../store/ducks/graph';
 
-  async componentDidMount() {
-    process.env[REACT_APP_PROVIDER_STATUS] = provider.status;
-    this.setState({
-      loggedUser: await graph.getUserDetails(provider.graph.client),
-    });
-  }
+export default function Messenger({ provider }) {
+  const { loggedUser, teams, channels, channelSelected } = useSelector(
+    state => ({
+      loggedUser: state.graph.userDetails,
+      teams: state.graph.teams,
+      channels: state.graph.channels,
+      channelSelected: state.graph.channelSelected,
+    })
+  );
 
-  selectGroup = groupSelected => {
-    this.setState({ groupSelected });
-  };
+  const dispatch = useDispatch();
 
-  selectChannel = channelSelected => {
-    this.setState({ channelSelected });
-  };
+  useEffect(() => {
+    console.log('ENTERED useEffect [] on Messenger');
+    dispatch(GraphActions.getUserDetailsRequest(provider.graph.client));
+    dispatch(GraphActions.getTeamsRequest(provider.graph.client));
+  }, []);
 
-  render() {
-    // console.log('Messenger state', this.state);
-    return (
-      <div className="messenger">
-        <div className="scrollable sidebar">
-          <ConversationList
-            provider={provider}
-            setGroupSelected={this.selectGroup}
-            setChannelSelected={this.selectChannel}
-            channelSelected={this.state.channelSelected}
-          />
-        </div>
+  useEffect(() => {
+    console.log('loggedUser in Messenger changed to:', loggedUser);
+  }, [loggedUser]);
 
-        <div className="scrollable content">
-          <MessageList
-            provider={provider}
-            loggedUser={this.state.loggedUser}
-            groupSelected={this.state.groupSelected}
-            channelSelected={this.state.channelSelected}
-          />
-        </div>
+  useEffect(() => {
+    console.log('teams in Messenger changed to:', teams);
+    if (Array.isArray(teams)) {
+      teams.map(team => {
+        dispatch(
+          GraphActions.getChannelsRequest(provider.graph.client, team.id)
+        );
+      });
+    }
+  }, [teams]);
+
+  useEffect(() => {
+    console.log('channels in Messenger changed to:', channels);
+    if (Array.isArray(channels) && (!channelSelected || !channelSelected.id)) {
+      dispatch(GraphActions.setChannelSelected(channels[0]));
+    }
+  }, [channels]);
+
+  useEffect(() => {
+    console.log('channelSelected in Messenger changed to:', channelSelected);
+  }, [channelSelected]);
+
+  return (
+    <div className="messenger">
+      <div className="scrollable sidebar">
+        <ConversationList />
       </div>
-    );
-  }
+
+      <div className="scrollable content">
+        <MessageList provider={provider} />
+      </div>
+    </div>
+  );
 }

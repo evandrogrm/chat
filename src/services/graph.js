@@ -5,13 +5,14 @@ export default {
     return client.api('/me').get();
   },
 
-  getEvents: async function(client) {
-    return client
-      .api('/me/events')
-      .select('subject,organizer,start,end')
-      .orderby('createdDateTime DESC')
-      .get();
-  },
+  // NOT YET USED
+  // getEvents: async function(client) {
+  //   return client
+  //     .api('/me/events')
+  //     .select('subject,organizer,start,end')
+  //     .orderby('createdDateTime DESC')
+  //     .get();
+  // },
 
   getTeams: async function(client) {
     try {
