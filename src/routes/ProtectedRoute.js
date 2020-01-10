@@ -1,24 +1,16 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
-import provider from '../CustomTeamsProvider';
+import graphService from '../services/graph';
+import TeamsContext from '../TeamsContext';
 
 export default class ProtectedRoute extends React.Component {
-  isUserLogged = () => {
-    if (provider.state !== 0) {
-      return false;
-    }
-    const keys = Object.keys(localStorage);
-    let keyValue = null;
-    for (const k of keys) {
-      if (k.includes(process.env.REACT_APP_APP_ID)) {
-        keyValue = JSON.parse(localStorage.getItem(k));
-      }
-    }
-    return !!keyValue;
-  };
+  static contextType = TeamsContext;
 
   componentDidMount() {
-    if (!this.isUserLogged()) {
+    console.log('this.context.state', this.context.state);
+    console.log('ProtectedRoute this.context', this.context);
+    console.log('graphService.isUserLogged(): ', graphService.isUserLogged());
+    if (!graphService.isUserLogged()) {
       window.location.href = window.location.origin + '/login';
     }
   }
@@ -26,11 +18,6 @@ export default class ProtectedRoute extends React.Component {
   render() {
     const { component: Component, ...props } = this.props;
 
-    return (
-      <Route
-        {...props}
-        render={props => <Component {...props} provider={provider} />}
-      />
-    );
+    return <Route {...props} render={props => <Component {...props} />} />;
   }
 }

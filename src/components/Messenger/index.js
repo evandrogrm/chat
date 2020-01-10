@@ -6,7 +6,7 @@ import './Messenger.css';
 
 import { Creators as GraphActions } from '../../store/ducks/graph';
 
-export default function Messenger({ provider }) {
+export default function Messenger() {
   const { loggedUser, teams, channels, channelSelected } = useSelector(
     state => ({
       loggedUser: state.graph.userDetails,
@@ -20,21 +20,19 @@ export default function Messenger({ provider }) {
 
   useEffect(() => {
     console.log('ENTERED useEffect [] on Messenger');
-    dispatch(GraphActions.getUserDetailsRequest(provider.graph.client));
-    dispatch(GraphActions.getTeamsRequest(provider.graph.client));
+    dispatch(GraphActions.getUserDetailsRequest());
   }, []);
 
   useEffect(() => {
     console.log('loggedUser in Messenger changed to:', loggedUser);
+    dispatch(GraphActions.getTeamsRequest());
   }, [loggedUser]);
 
   useEffect(() => {
     console.log('teams in Messenger changed to:', teams);
     if (Array.isArray(teams)) {
       teams.map(team => {
-        dispatch(
-          GraphActions.getChannelsRequest(provider.graph.client, team.id)
-        );
+        dispatch(GraphActions.getChannelsRequest(team.id));
       });
     }
   }, [teams]);
@@ -57,7 +55,7 @@ export default function Messenger({ provider }) {
       </div>
 
       <div className="scrollable content">
-        <MessageList provider={provider} />
+        <MessageList />
       </div>
     </div>
   );

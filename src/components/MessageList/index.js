@@ -10,7 +10,7 @@ import services from '../../services';
 
 import { Creators as GraphActions } from '../../store/ducks/graph';
 
-export default function MessageList({ provider }) {
+export default function MessageList() {
   const [currentMessages, setCurrentMessages] = useState([]);
   const { loggedUser, teams, channelSelected, messages } = useSelector(
     state => ({
@@ -54,7 +54,7 @@ export default function MessageList({ provider }) {
     const groupId = !!teams[0] ? teams[0].id : '';
     const channelId = !!channelSelected ? channelSelected.id : '';
 
-    dispatch(GraphActions.getMessagesRequest(provider.graph.client, groupId, channelId));
+    dispatch(GraphActions.getMessagesRequest(groupId, channelId));
   };
 
   const renderMessages = () => {

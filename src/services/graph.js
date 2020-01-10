@@ -1,7 +1,15 @@
 import 'isomorphic-fetch';
+import provider from '../CustomTeamsProvider';
+
+const client = provider.graph.client;
 
 export default {
-  getUserDetails: async function(client) {
+  isUserLogged: function() {
+    console.log('provider: ', provider);
+    return provider.state === 0;
+  },
+
+  getUserDetails: async function() {
     return client.api('/me').get();
   },
 
@@ -14,7 +22,7 @@ export default {
   //     .get();
   // },
 
-  getTeams: async function(client) {
+  getTeams: async function() {
     try {
       return await client.api('/me/joinedTeams').get();
     } catch (error) {
@@ -22,7 +30,7 @@ export default {
     }
   },
 
-  getChannels: async function(client, groupId) {
+  getChannels: async function(groupId) {
     try {
       return await client.api(`/teams/${groupId}/channels`).get();
     } catch (error) {
@@ -30,7 +38,7 @@ export default {
     }
   },
 
-  getMessages: async function(client, groupId, channelId) {
+  getMessages: async function(groupId, channelId) {
     try {
       return await client
         .api(`/teams/${groupId}/channels/${channelId}/messages`)
@@ -40,4 +48,20 @@ export default {
       console.error(error);
     }
   },
+
+  getImage: async function(url) {
+    try {
+      if (url.includes('beta')) {
+        return await client
+          .api(url)
+          .version('beta')
+          .get();
+      }
+      return await client.api(url).get();
+    } catch (error) {
+      console.error(error);
+    }
+  },
 };
+
+export { provider };

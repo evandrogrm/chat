@@ -3,81 +3,47 @@ import { call, put } from 'redux-saga/effects';
 import graph from '../../services/graph';
 
 import { Creators as GraphActions } from '../ducks/graph';
-import { Creators as ErrorActions } from '../ducks/error';
 
-export function* getUserDetails(action) {
-  console.log('action: ', action);
+export function* getUserDetails() {
   try {
-    if (!action.payload.client) {
-      console.log('Invalid client on getUserDetails');
-      return;
-    }
-    const response = yield call(graph.getUserDetails, action.payload.client);
+    const response = yield call(graph.getUserDetails);
     yield put(GraphActions.getUserDetailsSuccess(response));
   } catch (err) {
     console.error(err);
-    yield put(
-      ErrorActions.setError(
-        'Um erro ocorreu, por favor tente novamente mais tarde.'
-      )
-    );
   }
 }
 
-export function* getTeams(action) {
+export function* getTeams() {
   try {
-    if (!action.payload.client) {
-      console.log('Invalid client on getTeams');
-      return;
-    }
-    const response = yield call(graph.getTeams, action.payload.client);
+    const response = yield call(graph.getTeams);
     yield put(GraphActions.getTeamsSuccess(response.value));
   } catch (err) {
     console.error(err);
-    yield put(
-      ErrorActions.setError(
-        'Um erro ocorreu, por favor tente novamente mais tarde.'
-      )
-    );
   }
 }
 
 export function* getChannels(action) {
   try {
-    const { client, groupId } = action.payload;
-    if (!client) {
-      console.log('Invalid client on getChannels');
-      return;
+    const { groupId } = action.payload;
+    if (!groupId) {
+      console.log('invalid params on getChannels from graph saga')
     }
-    const response = yield call(graph.getChannels, client, groupId);
+    const response = yield call(graph.getChannels, groupId);
     yield put(GraphActions.getChannelsSuccess(response.value));
   } catch (err) {
     console.error(err);
-    yield put(
-      ErrorActions.setError(
-        'Um erro ocorreu, por favor tente novamente mais tarde.'
-      )
-    );
   }
 }
 
 export function* getMessages(action) {
-  console.log('getMessages');
   try {
-    const { client, groupId, channelId } = action.payload;
-    if (!client) {
-      console.log('Invalid client on getMessages');
-      return;
+    const { groupId, channelId } = action.payload;
+    if (!groupId || !channelId) {
+      console.log('invalid params on getMessages from graph saga')
     }
-    const response = yield call(graph.getMessages, client, groupId, channelId);
-    console.log('response: ', response);
+    const response = yield call(graph.getMessages, groupId, channelId);
     yield put(GraphActions.getMessagesSuccess(response.value));
   } catch (err) {
     console.error(err);
-    yield put(
-      ErrorActions.setError(
-        'Um erro ocorreu, por favor tente novamente mais tarde.'
-      )
-    );
   }
 }
