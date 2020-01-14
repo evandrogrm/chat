@@ -5,6 +5,8 @@ import ConversationListItem from '../ConversationListItem';
 import Toolbar from '../Toolbar';
 import ToolbarButton from '../ToolbarButton';
 import './ConversationList.css';
+import LoginPage from '../LoginPage';
+import '@microsoft/mgt/dist/es6/components/mgt-login/mgt-login.js';
 
 import { Creators as GraphActions } from '../../store/ducks/graph';
 
@@ -51,10 +53,11 @@ export default function ConversationList() {
     <div className="conversation-list">
       <Toolbar
         title="Teams Messenger"
-        leftItems={[<ToolbarButton key="cog" icon="ion-ios-cog" />]}
-        rightItems={[
-          <ToolbarButton key="add" icon="ion-ios-add-circle-outline" />,
-        ]}
+        leftItems={[<LoginPage key="login" />]}
+        // leftItems={[<ToolbarButton key="cog" icon="ion-ios-cog" />]}
+        rightItems={
+          <ToolbarButton key="add" icon="ion-ios-add-circle-outline" />
+        }
       />
       <ConversationSearch />
       {conversations.map(conversation => (

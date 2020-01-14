@@ -5,8 +5,11 @@ const client = provider.graph.client;
 
 export default {
   isUserLogged: function() {
-    console.log('provider: ', provider);
     return provider.state === 0;
+  },
+
+  logout: function() {
+    return provider.logout();
   },
 
   getUserDetails: async function() {
@@ -49,19 +52,17 @@ export default {
     }
   },
 
-  getImage: async function(url) {
+  getImage: function(url) {
     try {
       if (url.includes('beta')) {
-        return await client
+        return client
           .api(url)
           .version('beta')
           .get();
       }
-      return await client.api(url).get();
+      return client.api(url).get();
     } catch (error) {
       console.error(error);
     }
   },
 };
-
-export { provider };

@@ -20,20 +20,22 @@ export default function Messenger() {
 
   useEffect(() => {
     console.log('ENTERED useEffect [] on Messenger');
-    dispatch(GraphActions.getUserDetailsRequest());
+    if (!loggedUser || !('id' in loggedUser)) {
+      dispatch(GraphActions.getUserDetailsRequest());
+    }
   }, []);
 
   useEffect(() => {
     console.log('loggedUser in Messenger changed to:', loggedUser);
-    dispatch(GraphActions.getTeamsRequest());
+    if (loggedUser && 'id' in loggedUser) {
+      dispatch(GraphActions.getTeamsRequest());
+    }
   }, [loggedUser]);
 
   useEffect(() => {
     console.log('teams in Messenger changed to:', teams);
     if (Array.isArray(teams)) {
-      teams.map(team => {
-        dispatch(GraphActions.getChannelsRequest(team.id));
-      });
+      teams.map(team => dispatch(GraphActions.getChannelsRequest(team.id)));
     }
   }, [teams]);
 

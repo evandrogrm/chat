@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Compose from '../Compose';
 import Toolbar from '../Toolbar';
@@ -7,6 +7,7 @@ import Message from '../Message';
 import moment from 'moment';
 import './MessageList.css';
 import services from '../../services';
+import graphService from '../../services/graph';
 
 import { Creators as GraphActions } from '../../store/ducks/graph';
 
@@ -47,7 +48,7 @@ export default function MessageList() {
     }));
     tempMessages = [...tempMessages];
     tempMessages = services.sortArray(tempMessages, 'createdDateTime');
-    setCurrentMessages(tempMessages)
+    setCurrentMessages(tempMessages);
   }, [messages]);
 
   const getMessages = () => {
@@ -57,10 +58,28 @@ export default function MessageList() {
     dispatch(GraphActions.getMessagesRequest(groupId, channelId));
   };
 
+  const getImage = useCallback(body => {
+    async function loadImage(url, img) {
+      const image = await graphService.getImage(url);
+      img.setAttribute('src', image);
+      return img;
+    }
+    const dom = document.createElement('div');
+    dom.innerHTML = body.content;
+    const img = dom.getElementsByTagName('img')[0];
+    if (!img) {
+      return;
+    }
+    const url = img.getAttribute('src');
+    const imageUrl = loadImage(url, img);
+    console.log('imageUrl: ', imageUrl);
+    return img;
+  }, []);
+
   const renderMessages = () => {
     let i = 0;
     let messageCount = currentMessages.length;
-    let tempMessages = [];
+    let newMessages = [];
 
     while (i < messageCount) {
       let previous = currentMessages[i - 1];
@@ -100,22 +119,30 @@ export default function MessageList() {
         }
       }
 
-      tempMessages.push(
-        <Message
-          key={i}
-          isMine={isMine}
-          startsSequence={startsSequence}
-          endsSequence={endsSequence}
-          showTimestamp={showTimestamp}
-          data={current}
-        />
-      );
+      newMessages.push({
+        key: i,
+        isMine,
+        startsSequence,
+        endsSequence,
+        showTimestamp,
+        current,
+      });
 
       // Proceed to the next message.
       i += 1;
     }
 
-    return tempMessages;
+    return newMessages.map(m => (
+      <Message
+        key={m.key}
+        isMine={m.isMine}
+        startsSequence={m.startsSequence}
+        endsSequence={m.endsSequence}
+        showTimestamp={m.showTimestamp}
+        data={m.current}
+        getImage={getImage}
+      />
+    ));
   };
 
   return (

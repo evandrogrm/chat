@@ -29,8 +29,8 @@ const INITIAL_STATE = Immutable({
 });
 
 export default function graph(state = INITIAL_STATE, action) {
-  console.log('duck state: ', state);
-  console.log('duck action: ', action);
+  // console.log('duck state: ', state);
+  // console.log('duck action: ', action);
   switch (action.type) {
     case Types.GET_USER_DETAILS_REQUEST:
       return { ...state, loading: true };
@@ -80,36 +80,34 @@ export default function graph(state = INITIAL_STATE, action) {
  */
 export const Creators = {
   // UserDetails
-  getUserDetailsRequest: client => ({
+  getUserDetailsRequest: () => ({
     type: Types.GET_USER_DETAILS_REQUEST,
-    payload: { client },
   }),
   getUserDetailsSuccess: userDetails => ({
     type: Types.GET_USER_DETAILS_SUCCESS,
     payload: { userDetails },
   }),
   // Teams
-  getTeamsRequest: client => ({
+  getTeamsRequest: () => ({
     type: Types.GET_TEAMS_REQUEST,
-    payload: { client },
   }),
   getTeamsSuccess: teams => ({
     type: Types.GET_TEAMS_SUCCESS,
     payload: { teams },
   }),
   // Channels
-  getChannelsRequest: (client, groupId) => ({
+  getChannelsRequest: groupId => ({
     type: Types.GET_CHANNELS_REQUEST,
-    payload: { client, groupId },
+    payload: { groupId },
   }),
   getChannelsSuccess: channels => ({
     type: Types.GET_CHANNELS_SUCCESS,
     payload: { channels },
   }),
   // Messages
-  getMessagesRequest: (client, groupId, channelId) => ({
+  getMessagesRequest: (groupId, channelId) => ({
     type: Types.GET_MESSAGES_REQUEST,
-    payload: { client, groupId, channelId },
+    payload: { groupId, channelId },
   }),
   getMessagesSuccess: messages => ({
     type: Types.GET_MESSAGES_SUCCESS,
