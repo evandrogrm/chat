@@ -6,16 +6,14 @@ import { Creators as GraphActions } from '../ducks/graph';
 
 export function* getUserDetails() {
   try {
-    console.log('process.env.REACT_APP_DELAY_REQUEST: ', process.env.REACT_APP_DELAY_REQUEST);
-    yield delay(process.env.REACT_APP_DELAY_REQUEST, 0);
+    yield delay(process.env.REACT_APP_DELAY_REQUEST || 0);
     const response = yield call(graph.getUserDetails);
-    console.log('response: ', response);
     yield put(GraphActions.getUserDetailsSuccess(response));
   } catch (err) {
-    console.log('error in getUserDetails');
-    console.error(err);
+    if (process.env.REACT_APP_SHOW_ERROR === true) {
+      console.error('getUserDetails', err);
+    }
     if (err.code === 'ClientAuthError') {
-      console.log('ClientAuthError')
       yield graph.logout();
     }
   }
@@ -27,8 +25,9 @@ export function* getTeams() {
     const response = yield call(graph.getTeams);
     yield put(GraphActions.getTeamsSuccess(response.value));
   } catch (err) {
-    console.log('error in getTeams');
-    console.error(err);
+    if (process.env.REACT_APP_SHOW_ERROR === true) {
+      console.error('getTeams', err);
+    }
   }
 }
 
@@ -36,15 +35,17 @@ export function* getChannels(action) {
   try {
     const { groupId } = action.payload;
     if (!groupId) {
-      console.log('invalid params on getChannels from graph saga');
+      if (process.env.REACT_APP_SHOW_LOG === true)
+        console.log('invalid params on getChannels', action.payload);
       return;
     }
     yield delay(process.env.REACT_APP_DELAY_REQUEST, 0);
     const response = yield call(graph.getChannels, groupId);
     yield put(GraphActions.getChannelsSuccess(response.value));
   } catch (err) {
-    console.log('error in getChannels');
-    console.error(err);
+    if (process.env.REACT_APP_SHOW_ERROR === true) {
+      console.error('getChannels', err);
+    }
   }
 }
 
@@ -52,14 +53,33 @@ export function* getMessages(action) {
   try {
     const { groupId, channelId } = action.payload;
     if (!groupId || !channelId) {
-      console.log('invalid params on getMessages from graph saga');
+      if (process.env.REACT_APP_SHOW_LOG === true)
+        console.log('invalid params on getMessages', action.payload);
       return;
     }
     yield delay(process.env.REACT_APP_DELAY_REQUEST, 0);
     const response = yield call(graph.getMessages, groupId, channelId);
     yield put(GraphActions.getMessagesSuccess(response.value));
+
+    // TODO: CONTINUE SUBSCRIBE GET MESSAGES
+    // if (process.env.REACT_APP_SET_INTERVAL || false) {
+    //   let _groupId = Object.assign({}, groupId);
+    //   let _channelId = Object.assign({}, channelId);
+    //   const interval = setInterval(function* intervalFunction() {
+    //     console.log('iniciou interval');
+    //     if (groupId !== _groupId || channelId !== _channelId) {
+    //       console.log('clearInterval');
+    //       clearInterval(interval);
+    //     }
+    //     yield delay(process.env.REACT_APP_DELAY_REQUEST, 0);
+    //     const res = yield call(graph.getMessages, groupId, channelId);
+    //     console.log('res: ', res);
+    //     yield put(GraphActions.getMessagesSuccess(res.value));
+    //   }, process.env.REACT_APP_INTERVAL || 1000);
+    // }
   } catch (err) {
-    console.log('error in getMessages');
-    console.error(err);
+    if (process.env.REACT_APP_SHOW_ERROR === true) {
+      console.error('getMessages', err);
+    }
   }
 }

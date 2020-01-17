@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Compose from '../Compose';
 import Toolbar from '../Toolbar';
@@ -7,7 +7,6 @@ import Message from '../Message';
 import moment from 'moment';
 import './MessageList.css';
 import services from '../../services';
-import graphService from '../../services/graph';
 
 import { Creators as GraphActions } from '../../store/ducks/graph';
 
@@ -25,18 +24,22 @@ export default function MessageList() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    getMessages();
-  }, []);
+    if (process.env.REACT_APP_SHOW_LOG === true) {
+      console.log(
+        'channelSelected in MessageList changed to:',
+        channelSelected
+      );
+    }
 
-  useEffect(() => {
-    console.log('channelSelected in MessageList changed to:', channelSelected);
     if (!!channelSelected && !!channelSelected.id) {
       getMessages();
     }
   }, [channelSelected]);
 
   useEffect(() => {
-    console.log('messages in MessageList changed to:', messages);
+    if (process.env.REACT_APP_SHOW_LOG === true)
+      console.log('messages in MessageList changed to:', messages);
+
     let tempMessages = messages.map(m => ({
       id: m.id,
       userId: m.from.user.id,
@@ -57,24 +60,6 @@ export default function MessageList() {
 
     dispatch(GraphActions.getMessagesRequest(groupId, channelId));
   };
-
-  const getImage = useCallback(body => {
-    async function loadImage(url, img) {
-      const image = await graphService.getImage(url);
-      img.setAttribute('src', image);
-      return img;
-    }
-    const dom = document.createElement('div');
-    dom.innerHTML = body.content;
-    const img = dom.getElementsByTagName('img')[0];
-    if (!img) {
-      return;
-    }
-    const url = img.getAttribute('src');
-    const imageUrl = loadImage(url, img);
-    console.log('imageUrl: ', imageUrl);
-    return img;
-  }, []);
 
   const renderMessages = () => {
     let i = 0;
@@ -140,7 +125,6 @@ export default function MessageList() {
         endsSequence={m.endsSequence}
         showTimestamp={m.showTimestamp}
         data={m.current}
-        getImage={getImage}
       />
     ));
   };

@@ -29,8 +29,6 @@ const INITIAL_STATE = Immutable({
 });
 
 export default function graph(state = INITIAL_STATE, action) {
-  // console.log('duck state: ', state);
-  // console.log('duck action: ', action);
   switch (action.type) {
     case Types.GET_USER_DETAILS_REQUEST:
       return { ...state, loading: true };

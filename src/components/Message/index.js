@@ -8,7 +8,6 @@ export default function Message({
   startsSequence,
   endsSequence,
   showTimestamp,
-  getImage,
 }) {
   const friendlyTimestamp = moment(data.timestamp).format('LLLL');
 
@@ -16,9 +15,7 @@ export default function Message({
     if (body.contentType === 'text') {
       return body.content;
     }
-    if (body.content.includes('<img')) {
-      return <div>{getImage(body)}</div>;
-    }
+    return <div dangerouslySetInnerHTML={{ __html: body.content }}></div>;
   };
 
   return (
