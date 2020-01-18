@@ -10,7 +10,7 @@ export function* getUserDetails() {
     const response = yield call(graph.getUserDetails);
     yield put(GraphActions.getUserDetailsSuccess(response));
   } catch (err) {
-    if (process.env.REACT_APP_SHOW_ERROR === true) {
+    if (process.env.REACT_APP_SHOW_ERROR === 'true') {
       console.error('getUserDetails', err);
     }
     if (err.code === 'ClientAuthError') {
@@ -25,7 +25,7 @@ export function* getTeams() {
     const response = yield call(graph.getTeams);
     yield put(GraphActions.getTeamsSuccess(response.value));
   } catch (err) {
-    if (process.env.REACT_APP_SHOW_ERROR === true) {
+    if (process.env.REACT_APP_SHOW_ERROR === 'true') {
       console.error('getTeams', err);
     }
   }
@@ -35,7 +35,7 @@ export function* getChannels(action) {
   try {
     const { groupId } = action.payload;
     if (!groupId) {
-      if (process.env.REACT_APP_SHOW_LOG === true)
+      if (process.env.REACT_APP_SHOW_LOG === 'true')
         console.log('invalid params on getChannels', action.payload);
       return;
     }
@@ -43,8 +43,25 @@ export function* getChannels(action) {
     const response = yield call(graph.getChannels, groupId);
     yield put(GraphActions.getChannelsSuccess(response.value));
   } catch (err) {
-    if (process.env.REACT_APP_SHOW_ERROR === true) {
+    if (process.env.REACT_APP_SHOW_ERROR === 'true') {
       console.error('getChannels', err);
+    }
+  }
+}
+
+export function* sendMessage(action) {
+  try {
+    const { groupId, channelId, message } = action.payload;
+    if (!groupId || !channelId || !message) {
+      if (process.env.REACT_APP_SHOW_LOG === 'true')
+        console.log('invalid params on sendMessage', action.payload);
+      return;
+    }
+    const response = yield call(graph.sendMessage, groupId, channelId, message);
+    yield put(GraphActions.sendMessageSuccess(response));
+  } catch (err) {
+    if (process.env.REACT_APP_SHOW_ERROR === 'true') {
+      console.error('sendMessage', err);
     }
   }
 }
@@ -53,7 +70,7 @@ export function* getMessages(action) {
   try {
     const { groupId, channelId } = action.payload;
     if (!groupId || !channelId) {
-      if (process.env.REACT_APP_SHOW_LOG === true)
+      if (process.env.REACT_APP_SHOW_LOG === 'true')
         console.log('invalid params on getMessages', action.payload);
       return;
     }
@@ -78,7 +95,7 @@ export function* getMessages(action) {
     //   }, process.env.REACT_APP_INTERVAL || 1000);
     // }
   } catch (err) {
-    if (process.env.REACT_APP_SHOW_ERROR === true) {
+    if (process.env.REACT_APP_SHOW_ERROR === 'true') {
       console.error('getMessages', err);
     }
   }

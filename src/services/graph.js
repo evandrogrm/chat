@@ -52,6 +52,22 @@ export default {
     }
   },
 
+  sendMessage: async function(groupId, channelId, message) {
+    try {
+      const body = {
+        body: {
+          content: message,
+        },
+      };
+      return await client
+        .api(`/teams/${groupId}/channels/${channelId}/messages`)
+        .version('beta')
+        .post(body);
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
   getImage: function(url) {
     try {
       if (url.includes('beta')) {

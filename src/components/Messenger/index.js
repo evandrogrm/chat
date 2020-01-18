@@ -12,6 +12,7 @@ export default function Messenger() {
       loggedUser: state.graph.userDetails,
       teams: state.graph.teams,
       channels: state.graph.channels,
+      teamSelected: state.graph.teamSelected,
       channelSelected: state.graph.channelSelected,
     })
   );
@@ -19,8 +20,8 @@ export default function Messenger() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
-    console.log('ENTERED useEffect [] on Messenger');
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('ENTERED useEffect [] on Messenger');
 
     if (!loggedUser || !('id' in loggedUser)) {
       dispatch(GraphActions.getUserDetailsRequest());
@@ -28,8 +29,8 @@ export default function Messenger() {
   }, []);
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
-    console.log('loggedUser in Messenger changed to:', loggedUser);
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('loggedUser in Messenger changed to:', loggedUser);
 
     if (loggedUser && 'id' in loggedUser) {
       dispatch(GraphActions.getTeamsRequest());
@@ -37,8 +38,8 @@ export default function Messenger() {
   }, [loggedUser]);
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
-    console.log('teams in Messenger changed to:', teams);
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('teams in Messenger changed to:', teams);
 
     if (Array.isArray(teams)) {
       teams.map(team => dispatch(GraphActions.getChannelsRequest(team.id)));
@@ -46,8 +47,8 @@ export default function Messenger() {
   }, [teams]);
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
-    console.log('channels in Messenger changed to:', channels);
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('channels in Messenger changed to:', channels);
 
     if (Array.isArray(channels) && (!channelSelected || !channelSelected.id)) {
       dispatch(GraphActions.setChannelSelected(channels[0]));
@@ -55,8 +56,8 @@ export default function Messenger() {
   }, [channels]);
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
-    console.log('channelSelected in Messenger changed to:', channelSelected);
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('channelSelected in Messenger changed to:', channelSelected);
   }, [channelSelected]);
 
   return (

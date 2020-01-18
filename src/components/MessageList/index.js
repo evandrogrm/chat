@@ -12,19 +12,25 @@ import { Creators as GraphActions } from '../../store/ducks/graph';
 
 export default function MessageList() {
   const [currentMessages, setCurrentMessages] = useState([]);
-  const { loggedUser, teams, channelSelected, messages } = useSelector(
-    state => ({
-      loggedUser: state.graph.userDetails,
-      teams: state.graph.teams,
-      channelSelected: state.graph.channelSelected,
-      messages: state.graph.messages,
-    })
-  );
+  const [canSendMessage, setCanSendMessage] = useState(false);
+  const {
+    loggedUser,
+    teams,
+    channelSelected,
+    messages,
+    messageSent,
+  } = useSelector(state => ({
+    loggedUser: state.graph.userDetails,
+    teams: state.graph.teams,
+    channelSelected: state.graph.channelSelected,
+    messages: state.graph.messages,
+    messageSent: state.graph.messageSent,
+  }));
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true) {
+    if (process.env.REACT_APP_SHOW_LOG === 'true') {
       console.log(
         'channelSelected in MessageList changed to:',
         channelSelected
@@ -32,12 +38,16 @@ export default function MessageList() {
     }
 
     if (!!channelSelected && !!channelSelected.id) {
-      getMessages();
+      const groupId = !!teams[0] ? teams[0].id : '';
+      const channelId = !!channelSelected ? channelSelected.id : '';
+
+      dispatch(GraphActions.getMessagesRequest(groupId, channelId));
+      setCanSendMessage(true);
     }
   }, [channelSelected]);
 
   useEffect(() => {
-    if (process.env.REACT_APP_SHOW_LOG === true)
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
       console.log('messages in MessageList changed to:', messages);
 
     let tempMessages = messages.map(m => ({
@@ -54,12 +64,14 @@ export default function MessageList() {
     setCurrentMessages(tempMessages);
   }, [messages]);
 
-  const getMessages = () => {
-    const groupId = !!teams[0] ? teams[0].id : '';
-    const channelId = !!channelSelected ? channelSelected.id : '';
+  useEffect(() => {
+    if (process.env.REACT_APP_SHOW_LOG === 'true')
+      console.log('messageSent in MessageList changed to:', messageSent);
 
-    dispatch(GraphActions.getMessagesRequest(groupId, channelId));
-  };
+    if (!messageSent || !('id' in messageSent)) return;
+
+    setCurrentMessages([...currentMessages, messageSent]);
+  }, [messageSent]);
 
   const renderMessages = () => {
     let i = 0;
@@ -129,6 +141,13 @@ export default function MessageList() {
     ));
   };
 
+  const onMessageSent = message => {
+    const groupId = !!teams[0] ? teams[0].id : '';
+    dispatch(
+      GraphActions.sendMessageRequest(groupId, channelSelected.id, message)
+    );
+  };
+
   return (
     <div className="message-list">
       <Toolbar
@@ -145,16 +164,19 @@ export default function MessageList() {
 
       <div className="message-list-container">{renderMessages()}</div>
 
-      <Compose
-        rightItems={[
-          <ToolbarButton key="photo" icon="ion-ios-camera" />,
-          <ToolbarButton key="image" icon="ion-ios-image" />,
-          <ToolbarButton key="audio" icon="ion-ios-mic" />,
-          <ToolbarButton key="money" icon="ion-ios-card" />,
-          <ToolbarButton key="games" icon="ion-logo-game-controller-b" />,
-          <ToolbarButton key="emoji" icon="ion-ios-happy" />,
-        ]}
-      />
+      {canSendMessage && (
+        <Compose
+          rightItems={[
+            <ToolbarButton key="photo" icon="ion-ios-camera" />,
+            <ToolbarButton key="image" icon="ion-ios-image" />,
+            <ToolbarButton key="audio" icon="ion-ios-mic" />,
+            <ToolbarButton key="money" icon="ion-ios-card" />,
+            <ToolbarButton key="games" icon="ion-logo-game-controller-b" />,
+            <ToolbarButton key="emoji" icon="ion-ios-happy" />,
+          ]}
+          onMessageSent={message => onMessageSent(message)}
+        />
+      )}
     </div>
   );
 }

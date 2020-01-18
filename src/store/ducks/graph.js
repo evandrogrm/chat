@@ -12,6 +12,8 @@ export const Types = {
   GET_CHANNELS_SUCCESS: 'graph/GET_CHANNELS_SUCCESS',
   GET_MESSAGES_REQUEST: 'graph/GET_MESSAGES_REQUEST',
   GET_MESSAGES_SUCCESS: 'graph/GET_MESSAGES_SUCCESS',
+  PUT_MESSAGE_REQUEST: 'graph/PUT_MESSAGE_REQUEST',
+  PUT_MESSAGE_SUCCESS: 'graph/PUT_MESSAGE_SUCCESS',
   SET_CHANNEL: 'graph/SET_CHANNEL',
 };
 
@@ -25,6 +27,7 @@ const INITIAL_STATE = Immutable({
   messages: [],
   teamSelected: {},
   channelSelected: {},
+  messageSent: {},
   loading: false,
 });
 
@@ -60,6 +63,15 @@ export default function graph(state = INITIAL_STATE, action) {
       return {
         ...state,
         messages: action.payload.messages,
+        loading: false,
+      };
+    case Types.PUT_MESSAGES_REQUEST:
+      return { ...state, loading: true };
+    case Types.PUT_MESSAGES_SUCCESS:
+      console.log('payload', action.payload);
+      return {
+        ...state,
+        messageSent: action.payload,
         loading: false,
       };
     case Types.SET_CHANNEL:
@@ -102,7 +114,7 @@ export const Creators = {
     type: Types.GET_CHANNELS_SUCCESS,
     payload: { channels },
   }),
-  // Messages
+  // Get Messages
   getMessagesRequest: (groupId, channelId) => ({
     type: Types.GET_MESSAGES_REQUEST,
     payload: { groupId, channelId },
@@ -110,6 +122,15 @@ export const Creators = {
   getMessagesSuccess: messages => ({
     type: Types.GET_MESSAGES_SUCCESS,
     payload: { messages },
+  }),
+  // Send Message
+  sendMessageRequest: (groupId, channelId, message) => ({
+    type: Types.PUT_MESSAGE_REQUEST,
+    payload: { groupId, channelId, message },
+  }),
+  sendMessageSuccess: payload => ({
+    type: Types.PUT_MESSAGE_SUCCESS,
+    payload,
   }),
   // ChannelSelected
   setChannelSelected: channelSelected => ({
