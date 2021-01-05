@@ -6,7 +6,7 @@
     "@microsoft/mgt": "^1.1.0",
     "@microsoft/microsoft-graph-client": "^2.0.0",
     "@microsoft/teams-js": "^1.5.2",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "connected-react-router": "^6.6.1",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.23.0",
